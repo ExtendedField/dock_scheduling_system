@@ -8,6 +8,8 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from database.helper import get_color_key
+
 
 def parse_legacy_data(path: Path) -> pd.DataFrame:
     measurement_years = [
@@ -39,13 +41,7 @@ def _fill_in_sheet_using_color(
     This function flattens that to just just have the renter name in each day-berth name combo
     """
     color_grid = [
-        [
-            getattr(cell.fill.start_color, "rgb", None)
-            if cell.fill and cell.fill.start_color
-            else None
-            for cell in row
-        ]
-        for row in worksheet.iter_rows()
+        [get_color_key(cell) for cell in row] for row in worksheet.iter_rows()
     ]
     rows_containing_rental_info = sheet_data.loc[
         sheet_data.iloc[:, 0].str.contains("-")
@@ -53,19 +49,19 @@ def _fill_in_sheet_using_color(
     for i, row in rows_containing_rental_info.iterrows():
         i = typing.cast(int, i)
         row_coloring = color_grid[i]
-        sheet_data[i] = _fill_row_using_color(row, row_coloring)
+        sheet_data.loc[i] = _fill_row_using_color(row, row_coloring)
 
     return sheet_data
 
 
 def _fill_row_using_color(row: pd.Series, row_coloring: list) -> list[str]:
-    result: list[str] = []
+    result = row.tolist()
     current_text = None
     current_color = None
 
     for i, (value, color) in enumerate(zip(row, row_coloring)):
         has_text = pd.notna(value) and str(value) != ""
-        is_colored = color is not None and color != "00000000"
+        is_colored = color is not None
 
         if has_text and is_colored:
             current_text = value
