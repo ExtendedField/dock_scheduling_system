@@ -1,4 +1,5 @@
 import typing
+import uuid
 from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -11,21 +12,43 @@ from openpyxl.worksheet.worksheet import Worksheet
 from database.helper import get_color_key
 
 
-def parse_legacy_data(path: Path) -> pd.DataFrame:
+def parse_legacy_data(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     measurement_years = [
         str(i) for i in range(1970, datetime.now(ZoneInfo("America/New_York")).year)
     ]
-    sheets_in_excel = pd.ExcelFile(path).sheet_names
+    excel_file = pd.ExcelFile(path)
+    workbook = load_workbook(path, data_only=True)
+    sheets_in_excel = excel_file.sheet_names
     years_with_data = [sheet for sheet in sheets_in_excel if sheet in measurement_years]
     parsed_years: list[pd.DataFrame] = []
     for year in years_with_data:
-        df_sheet_data = pd.read_excel(path, sheet_name=year, header=None)
+        df_sheet_data = pd.read_excel(excel_file, sheet_name=year, header=None)
         df_filled_in_sheet_data = _fill_in_sheet_using_color(
-            worksheet=load_workbook(path, data_only=True)[year],
+            worksheet=workbook[year],
             sheet_data=df_sheet_data,
         )
         parsed_years.append(_parse_year(df_filled_in_sheet_data, year))
-    return pd.concat(parsed_years)
+
+    parsed_legacy_data = pd.concat(parsed_years)
+
+    dock_info_columns = ["dock_name", "dock_size", "dock_size_metric"]
+    reservation_columns = ["dock_id", "date", "reserved_by"]
+
+    dock_info_table = pd.DataFrame(
+        parsed_legacy_data[dock_info_columns]
+        .groupby(dock_info_columns, as_index=False)
+        .head(1)
+    ).reset_index(drop=True)
+    dock_info_table["dock_id"] = [
+        str(uuid.uuid4()) for _ in range(len(dock_info_table))
+    ]
+    reservation_history_table = pd.DataFrame(
+        parsed_legacy_data.merge(dock_info_table, how="left", on="dock_name")[
+            reservation_columns
+        ]
+    )
+
+    return dock_info_table, reservation_history_table
 
 
 def _fill_in_sheet_using_color(
@@ -82,9 +105,9 @@ def _parse_year(df_year_sheet: pd.DataFrame, year: str) -> pd.DataFrame:
     parsed_year["year"] = year
     parsed_year["date"] = [
         date(
-            year=int(row.year),
-            month=datetime.strptime(row.month, "%B").month,
-            day=int(row.day),
+            year=int(typing.cast(str, row.year)),
+            month=datetime.strptime(typing.cast(str, row.month), "%B").month,
+            day=int(typing.cast(float, row.day)),
         )
         for row in parsed_year.itertuples()
     ]
@@ -110,7 +133,7 @@ def _extract_month_chunks(df_year: pd.DataFrame, year: str) -> list[pd.DataFrame
     for month in month_blocks:
         # below is trustworthy given top left entry guaranteed to be
         # MONTH YYYY by construction
-        month_name = month.iloc[0, 0].split(" ")[0]
+        month_name = str(month.iloc[0, 0]).split(" ")[0]
         coerced_month = _coerce_month_to_expected_database_shape(month)
         coerced_month["month"] = month_name
         parsed_year.append(coerced_month)

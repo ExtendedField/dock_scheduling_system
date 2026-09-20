@@ -1,7 +1,7 @@
 Dev thoughts:
 
 Step 1: Database
-- Desgin DB system (postgres) to house the legacy data and any new reservations
+- Desgin DB system (sqllite) to house the legacy data and any new reservations
 - Write script to move data from excel to db
 
 Step 2: Scheduling logic
