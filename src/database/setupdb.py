@@ -5,7 +5,7 @@ from database.parse_legacy import parse_legacy_data
 from settings import settings
 
 LEGACY_DATA_PATH = settings.path_to_legacy_docking_data
-SQLLITE_ENGINE = create_engine("sqlite:///dock_scheduling.db")
+SQLLITE_ENGINE = create_engine(settings.sqllite_db_directory)
 
 
 def main():
