@@ -1,0 +1,20 @@
+[project]
+name = "dock-scheduling-system"
+version = "0.1.0"
+description = "WHOI marine research facility berth scheduling system"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=3.0.6",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "sqlmodel>=0.0.42",
+]
+
+
+[dependency-groups]
+dev = ["pyrefly>=1.3.1", "ruff>=0.16.8"]
+
+[tool.pyrefly]
+project_includes = ["src/", "database/"]
+search_path = [".", "src/"]

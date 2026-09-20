@@ -1,0 +1,12 @@
+# environments
+*.env
+!.env.example
+
+# legacy data
+*legacy_dock_schedule.xlsx
+
+# pycache
+*__pycache__
+
+# vscode
+*.vscode
