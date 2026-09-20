@@ -1,5 +1,5 @@
 import typing
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -80,25 +80,71 @@ def _parse_year(df_year_sheet: pd.DataFrame, year: str) -> pd.DataFrame:
     month_chunks = _extract_month_chunks(df_year_sheet, year)
     parsed_year = pd.concat(month_chunks)
     parsed_year["year"] = year
+    parsed_year["date"] = [
+        date(
+            year=int(row.year),
+            month=datetime.strptime(row.month, "%B").month,
+            day=int(row.day),
+        )
+        for row in parsed_year.itertuples()
+    ]
     return parsed_year
 
 
 def _extract_month_chunks(df_year: pd.DataFrame, year: str) -> list[pd.DataFrame]:
     index_column = df_year.iloc[:, 0]
-    month_block_indicies = index_column.loc[index_column.str.contains(year)].index
+    month_matches = index_column.astype("string").str.match(
+        r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
+        + rf"(?:\s+{year})?\s*$",
+        case=False,
+        na=False,
+    )
+    month_block_positions = [
+        position for position, is_month in enumerate(month_matches) if is_month
+    ]
     # dump the first chunk as it contains no data
     month_blocks = [
-        pd.DataFrame(month) for month in np.split(df_year, month_block_indicies)[1:]
+        pd.DataFrame(month) for month in np.split(df_year, month_block_positions)[1:]
     ]
     parsed_year: list[pd.DataFrame] = []
     for month in month_blocks:
+        # below is trustworthy given top left entry guaranteed to be
+        # MONTH YYYY by construction
+        month_name = month.iloc[0, 0].split(" ")[0]
         coerced_month = _coerce_month_to_expected_database_shape(month)
-        coerced_month["month"] = month
+        coerced_month["month"] = month_name
         parsed_year.append(coerced_month)
     return parsed_year
 
 
 def _coerce_month_to_expected_database_shape(month: pd.DataFrame) -> pd.DataFrame:
-    print(month)
-    print(month.T)
-    # day of the month is the index if this works
+    day_label_row = month.iloc[0].iloc[1:]
+    if not pd.to_numeric(day_label_row, errors="coerce").notna().any():
+        day_label_row = month.iloc[1].iloc[1:]
+    day_labels = pd.Series(
+        pd.to_numeric(day_label_row, errors="coerce").to_numpy(),
+        index=month.columns[1:],
+    )
+    reservation_rows = month[month.iloc[:, 0].str.contains("-")]
+
+    parsed_rows: list[pd.DataFrame] = []
+    for i, row in reservation_rows.iterrows():
+        dock_name, dock_size = [item.strip() for item in str(row[0]).split("-")]
+        # TODO: a lot of this should really use named types better for
+        #       easier reading of the various parsing ops
+        # day: int, reserved_by: str
+        dates_reserved = row.iloc[1:].dropna()
+        dates_reserved.index = day_labels.loc[dates_reserved.index]
+        dates_reserved = dates_reserved[dates_reserved.index.notna()].to_dict()
+        df_parsed_row = pd.DataFrame(
+            {
+                "day": [int(key) for key in dates_reserved],
+                "reserved_by": dates_reserved.values(),
+            }
+        )
+        df_parsed_row["dock_name"] = dock_name
+        df_parsed_row["dock_size"] = dock_size.strip("'")
+        df_parsed_row["dock_size_metric"] = "ft"
+        parsed_rows.append(df_parsed_row)
+
+    return pd.concat(parsed_rows)

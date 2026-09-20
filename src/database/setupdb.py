@@ -4,4 +4,10 @@ from settings import settings
 
 path = settings.path_to_legacy_docking_data
 
-parse_legacy_data(path=path)
+
+def main():
+    print(parse_legacy_data(path=path))
+
+
+if __name__ == "__main__":
+    main()
