@@ -2,6 +2,7 @@ import typing
 import uuid
 from datetime import date, datetime
 from pathlib import Path
+from time import strptime
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -106,7 +107,7 @@ def _parse_year(df_year_sheet: pd.DataFrame, year: str) -> pd.DataFrame:
     parsed_year["date"] = [
         date(
             year=int(typing.cast(str, row.year)),
-            month=datetime.strptime(typing.cast(str, row.month), "%B").month,
+            month=strptime(typing.cast(str, row.month), "%B").tm_mon,
             day=int(typing.cast(float, row.day)),
         )
         for row in parsed_year.itertuples()

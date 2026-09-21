@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from backend.dao import DocksDao, ReservationDao
-from schema import Reservation
+from schema import DockReservationHistory, Reservation
 from src.backend.helper import is_already_booked
 
 
@@ -28,3 +28,8 @@ def _vessel_fits(reservation: Reservation, docks_dao: DocksDao) -> bool:
 def _dock_booked(reservation: Reservation, reservations_dao: ReservationDao) -> bool:
     dates_booked = reservations_dao.get_dates_booked(reservation.dock_id)
     return is_already_booked(dates_booked, reservation.date_range)
+
+
+def get_all_existing_reservations(session: Session) -> list[DockReservationHistory]:
+    reservation_dao = ReservationDao(session)
+    return reservation_dao.get_all_reservations()

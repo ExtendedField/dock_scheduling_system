@@ -1,9 +1,8 @@
 from datetime import date, timedelta
 
-from sqlmodel import create_engine, Session, select, add
+from sqlmodel import Session, select
 
-from schema import Size, Reservation, DockInfo, DockReservationHistory
-from settings import settings
+from schema import DockInfo, DockReservationHistory, Reservation, Size
 
 
 class SQLLiteDao:
@@ -14,7 +13,9 @@ class SQLLiteDao:
 class ReservationDao(SQLLiteDao):
     def get_dates_booked(self, dock_id: str) -> list[date]:
         with self.session as session:
-            query = select(DockReservationHistory).where(dock_id == dock_id)
+            query = select(DockReservationHistory).where(
+                DockReservationHistory.dock_id == dock_id
+            )
             results = session.exec(query).all()
         return sorted([row.date for row in results])
 
@@ -35,6 +36,12 @@ class ReservationDao(SQLLiteDao):
                     )
                 )
             session.commit()
+
+    def get_all_reservations(self) -> list[DockReservationHistory]:
+        with self.session as session:
+            query = select(DockReservationHistory)
+            result = session.exec(query)
+        return [DockReservationHistory(*res) for res in result]
 
 
 class DocksDao(SQLLiteDao):
