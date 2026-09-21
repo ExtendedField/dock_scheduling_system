@@ -1,7 +1,6 @@
-import Header from "./componets/Header";
+import Header from "./components/Header";
 
 const App = () => {
-  
   return (
     <div>
       <Header name="Dock Scheduling System" />
