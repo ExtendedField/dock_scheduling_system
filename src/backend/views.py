@@ -1,10 +1,10 @@
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Response
+from sqlmodel import Session
 
 from backend import service
-from backend.dao import DocksDao, ReservationDao
-from backend.dependencies import get_docks_dao, get_reservation_dao
+from backend.dependencies import get_session
 from schema import Reservation
 
 app = FastAPI()
@@ -18,11 +18,10 @@ app.post("create_reservation/{reservation}")
 
 def create_reservation(
     reservation: Reservation,
-    reservation_dao: Annotated[ReservationDao, Depends(get_reservation_dao)],
-    docks_dao: Annotated[DocksDao, Depends(get_docks_dao)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     try:
-        service.add_reservation_to_database(reservation, reservation_dao, docks_dao)
+        service.add_reservation_to_database(reservation, session)
     except ValueError as e:
         return Response(content=e, status_code=400)
     return Response(

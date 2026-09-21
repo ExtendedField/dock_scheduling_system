@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
-class BerthReservationHistory(SQLModel, Table=True):
+class DockReservationHistory(SQLModel, Table=True):
     dock_id: uuid.UUID = Field(primary_key=True, default_factory=uuid.uuid4)
     date: date = Field(primary_key=True)
     reserved_by: str | None = None

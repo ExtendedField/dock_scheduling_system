@@ -1,17 +1,17 @@
+from sqlmodel import Session
+
 from backend.dao import DocksDao, ReservationDao
 from schema import Reservation
 from src.backend.helper import is_already_booked
 
 
-def add_reservation_to_database(
-    reservation: Reservation, reservation_dao: ReservationDao, docks_dao: DocksDao
-):
-    if not _vessel_fits(reservation, docks_dao):
+def add_reservation_to_database(reservation: Reservation, session: Session):
+    if not _vessel_fits(reservation, DocksDao(session)):
         raise ValueError(
             f"Vessel of size {reservation.vessel_size} does not fit in requested dock."
         )
-
-    if _dock_booked(reservation, reservation_dao):
+    reservation_dao = ReservationDao(session)
+    if _dock_booked(reservation, ReservationDao(session)):
         raise ValueError(
             f"Requested Dock is booked during date range {reservation.date_range}"
         )
