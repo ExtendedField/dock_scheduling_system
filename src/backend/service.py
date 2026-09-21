@@ -22,7 +22,7 @@ def add_reservation_to_database(reservation: Reservation, session: Session):
 def _vessel_fits(reservation: Reservation, docks_dao: DocksDao) -> bool:
     dock_size = docks_dao.get_dock_size(reservation.dock_id)
     # TODO: coerce to unified metric for apples to apples comparison
-    return dock_size.size > reservation.vessel_size.size
+    return dock_size > reservation.vessel_size
 
 
 def _dock_booked(reservation: Reservation, reservations_dao: ReservationDao) -> bool:

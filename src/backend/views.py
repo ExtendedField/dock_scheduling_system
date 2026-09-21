@@ -9,13 +9,8 @@ from schema import Reservation
 
 app = FastAPI()
 
-# features:
-# dont allow double bookings
-# verify a boat will fit
 
-app.post("create_reservation/{reservation}")
-
-
+@app.post("/create_reservation")
 def create_reservation(
     reservation: Reservation,
     session: Annotated[Session, Depends(get_session)],
@@ -23,7 +18,12 @@ def create_reservation(
     try:
         service.add_reservation_to_database(reservation, session)
     except ValueError as e:
-        return Response(content=e, status_code=400)
+        return Response(content=str(e), status_code=400)
     return Response(
         content=f"Successfully added reservation {reservation}", status_code=200
     )
+
+
+@app.get("/current_reservations")
+def get_current_reservations(session: Annotated[Session, Depends(get_session)]):
+    return service.get_all_existing_reservations(session=session)

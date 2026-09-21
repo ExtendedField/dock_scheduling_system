@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from sqlmodel import Session, select
 
-from schema import DockInfo, DockReservationHistory, Reservation, Size
+from schema import DockInfo, DockReservationHistory, Reservation
 
 
 class SQLLiteDao:
@@ -12,11 +12,10 @@ class SQLLiteDao:
 
 class ReservationDao(SQLLiteDao):
     def get_dates_booked(self, dock_id: str) -> list[date]:
-        with self.session as session:
-            query = select(DockReservationHistory).where(
-                DockReservationHistory.dock_id == dock_id
-            )
-            results = session.exec(query).all()
+        query = select(DockReservationHistory).where(
+            DockReservationHistory.dock_id == dock_id
+        )
+        results = self.session.exec(query).all()
         return sorted([row.date for row in results])
 
     def add_reservation(self, reservation: Reservation):
@@ -25,30 +24,27 @@ class ReservationDao(SQLLiteDao):
         dates_to_add = [
             start_date + timedelta(days=x) for x in range((end_date - start_date).days)
         ]
-        with self.session as session:
-            # add DockReservationHistory for each date in daterange
-            for day in dates_to_add:
-                session.add(
-                    DockReservationHistory(
-                        dock_id=reservation.dock_id,
-                        date=day,
-                        reserved_by=reservation.reserved_by,
-                    )
+        # add DockReservationHistory for each date in daterange
+        for day in dates_to_add:
+            self.session.add(
+                DockReservationHistory(
+                    dock_id=reservation.dock_id,
+                    date=day,
+                    reserved_by=reservation.reserved_by,
                 )
-            session.commit()
+            )
+        self.session.commit()
 
     def get_all_reservations(self) -> list[DockReservationHistory]:
-        with self.session as session:
-            query = select(DockReservationHistory)
-            result = session.exec(query)
-        return [DockReservationHistory(*res) for res in result]
+        query = select(DockReservationHistory)
+        result = self.session.exec(query)
+        return list(result)
 
 
 class DocksDao(SQLLiteDao):
-    def get_dock_size(self, dock_id: str) -> Size:
-        with self.session as session:
-            query = select(DockInfo).where(DockInfo.dock_id == dock_id)
-            results = session.exec(query).first()
+    def get_dock_size(self, dock_id: str) -> int:
+        query = select(DockInfo).where(DockInfo.dock_id == dock_id)
+        results = self.session.exec(query).first()
         if results:
-            return results.size
+            return results.dock_size
         raise FileNotFoundError(f"No dock found with passed id: {dock_id}")

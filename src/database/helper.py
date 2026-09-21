@@ -4,11 +4,6 @@ ColorKey = tuple[Any, ...] | None
 
 
 def get_color_key(cell: Any) -> ColorKey:
-    """
-    Color key fetcher targeted at the toy dataset
-
-    Function author: Copilot
-    """
     fill = cell.fill
 
     if fill.fill_type is None:

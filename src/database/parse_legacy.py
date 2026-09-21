@@ -135,13 +135,17 @@ def _extract_month_chunks(df_year: pd.DataFrame, year: str) -> list[pd.DataFrame
         # below is trustworthy given top left entry guaranteed to be
         # MONTH YYYY by construction
         month_name = str(month.iloc[0, 0]).split(" ")[0]
-        coerced_month = _coerce_month_to_expected_database_shape(month)
+        coerced_month = _coerce_month_to_expected_database_shape(
+            month, month_name, year
+        )
         coerced_month["month"] = month_name
         parsed_year.append(coerced_month)
     return parsed_year
 
 
-def _coerce_month_to_expected_database_shape(month: pd.DataFrame) -> pd.DataFrame:
+def _coerce_month_to_expected_database_shape(
+    month: pd.DataFrame, month_name: str, year: str
+) -> pd.DataFrame:
     day_label_row = month.iloc[0].iloc[1:]
     if not pd.to_numeric(day_label_row, errors="coerce").notna().any():
         day_label_row = month.iloc[1].iloc[1:]
@@ -171,4 +175,18 @@ def _coerce_month_to_expected_database_shape(month: pd.DataFrame) -> pd.DataFram
         df_parsed_row["dock_size_metric"] = "ft"
         parsed_rows.append(df_parsed_row)
 
-    return pd.concat(parsed_rows)
+    parsed_month = pd.concat(parsed_rows)
+    duplicate_mask = parsed_month.duplicated(subset=["dock_name", "day"], keep=False)
+    if duplicate_mask.any():
+        print("Duplicate dock bookings found in the Excel data:")
+        for row in (
+            parsed_month.loc[duplicate_mask]
+            .sort_values(["dock_name", "day"])
+            .itertuples()
+        ):
+            print(
+                f"  - {year}-{month_name}: {row.dock_name!r} on day "
+                f"{int(typing.cast(str, row.day))} ({row.reserved_by!r})"
+            )
+        parsed_month = parsed_month.loc[~duplicate_mask]
+    return parsed_month
