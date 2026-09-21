@@ -1,8 +1,8 @@
 from sqlmodel import Session
 
 from backend.dao import DocksDao, ReservationDao
+from backend.helper import is_already_booked
 from schema import DockReservationHistory, Reservation
-from src.backend.helper import is_already_booked
 
 
 def add_reservation_to_database(reservation: Reservation, session: Session):

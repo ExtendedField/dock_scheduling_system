@@ -1,16 +1,16 @@
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Response
+from fastapi import APIRouter, Depends, Response
 from sqlmodel import Session
 
 from backend import service
 from backend.dependencies import get_session
 from schema import Reservation
 
-app = FastAPI()
+router = APIRouter()
 
 
-@app.post("/create_reservation")
+@router.post("/create_reservation")
 def create_reservation(
     reservation: Reservation,
     session: Annotated[Session, Depends(get_session)],
@@ -24,6 +24,6 @@ def create_reservation(
     )
 
 
-@app.get("/current_reservations")
+@router.get("/current_reservations")
 def get_current_reservations(session: Annotated[Session, Depends(get_session)]):
     return service.get_all_existing_reservations(session=session)

@@ -34,4 +34,4 @@ search_path = [".", "src/"]
 setupdb = "database.setupdb:main"
 
 [tool.fastapi]
-entrypoint = "backend.views:app"
+entrypoint = "backend.main:app"
