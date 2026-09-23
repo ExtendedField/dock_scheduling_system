@@ -10,6 +10,3 @@
 
 # vscode
 *.vscode
-
-# databases
-*dock_scheduling.db
