@@ -41,6 +41,24 @@ export type DockInfo = {
 };
 
 /**
+ * DockReservationHistory
+ */
+export type DockReservationHistory = {
+    /**
+     * Dock Id
+     */
+    dock_id: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Reserved By
+     */
+    reserved_by?: string | null;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -135,10 +153,14 @@ export type GetCurrentReservationsCurrentReservationsGetData = {
 
 export type GetCurrentReservationsCurrentReservationsGetResponses = {
     /**
+     * Response Get Current Reservations Current Reservations Get
+     *
      * Successful Response
      */
-    200: unknown;
+    200: Array<DockReservationHistory>;
 };
+
+export type GetCurrentReservationsCurrentReservationsGetResponse = GetCurrentReservationsCurrentReservationsGetResponses[keyof GetCurrentReservationsCurrentReservationsGetResponses];
 
 export type GetDocksDocksGetData = {
     body?: never;

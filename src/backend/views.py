@@ -5,7 +5,7 @@ from sqlmodel import Session
 
 from backend import service
 from backend.dependencies import get_session
-from schema import DockInfo, Reservation
+from schema import DockInfo, DockReservationHistory, Reservation
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ def create_reservation(
     )
 
 
-@router.get("/current_reservations")
+@router.get("/current_reservations", response_model=list[DockReservationHistory])
 def get_current_reservations(session: Annotated[Session, Depends(get_session)]):
     return service.get_all_existing_reservations(session=session)
 

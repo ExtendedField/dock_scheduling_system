@@ -22,7 +22,8 @@ class ReservationDao(SQLLiteDao):
         start_date = reservation.date_range.start_date
         end_date = reservation.date_range.end_date
         dates_to_add = [
-            start_date + timedelta(days=x) for x in range((end_date - start_date).days)
+            start_date + timedelta(days=x)
+            for x in range((end_date - start_date).days + 1)
         ]
         # add DockReservationHistory for each date in daterange
         for day in dates_to_add:

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { getDocksDocksGet } from "../../client";
 
-const DockSelecter = () => {
+const DockSelecter = ({ selectedDock, onChange }) => {
   const [docks, setDocks] = useState([]);
-  const [selectedDock, setSelectedDock] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -26,7 +25,7 @@ const DockSelecter = () => {
       Select a Dock:
       <select
         value={selectedDock}
-        onChange={(event) => setSelectedDock(event.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         disabled={Boolean(error)}
       >
         <option value="">Select a dock</option>
