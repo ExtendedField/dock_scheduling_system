@@ -1,11 +1,14 @@
 from pathlib import Path
 
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(extra="ignore")
+
     sqllite_password: str
     sqllite_db_directory: str = f"sqlite:///{PROJECT_ROOT / 'dock_scheduling.db'}"
     path_to_legacy_docking_data: Path = (
