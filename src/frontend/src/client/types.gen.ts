@@ -19,6 +19,28 @@ export type DateRange = {
 };
 
 /**
+ * DockInfo
+ */
+export type DockInfo = {
+    /**
+     * Dock Id
+     */
+    dock_id: string;
+    /**
+     * Dock Name
+     */
+    dock_name: string;
+    /**
+     * Dock Size
+     */
+    dock_size: number;
+    /**
+     * Dock Size Metric
+     */
+    dock_size_metric?: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -117,3 +139,21 @@ export type GetCurrentReservationsCurrentReservationsGetResponses = {
      */
     200: unknown;
 };
+
+export type GetDocksDocksGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/docks';
+};
+
+export type GetDocksDocksGetResponses = {
+    /**
+     * Response Get Docks Docks Get
+     *
+     * Successful Response
+     */
+    200: Array<DockInfo>;
+};
+
+export type GetDocksDocksGetResponse = GetDocksDocksGetResponses[keyof GetDocksDocksGetResponses];

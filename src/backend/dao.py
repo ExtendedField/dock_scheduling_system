@@ -42,6 +42,10 @@ class ReservationDao(SQLLiteDao):
 
 
 class DocksDao(SQLLiteDao):
+    def get_all_docks(self) -> list[DockInfo]:
+        query = select(DockInfo)
+        return list(self.session.exec(query))
+
     def get_dock_size(self, dock_id: str) -> int:
         query = select(DockInfo).where(DockInfo.dock_id == dock_id)
         results = self.session.exec(query).first()

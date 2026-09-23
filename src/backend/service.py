@@ -2,7 +2,7 @@ from sqlmodel import Session
 
 from backend.dao import DocksDao, ReservationDao
 from backend.helper import is_already_booked
-from schema import DockReservationHistory, Reservation
+from schema import DockInfo, DockReservationHistory, Reservation
 
 
 def add_reservation_to_database(reservation: Reservation, session: Session):
@@ -33,3 +33,7 @@ def _dock_booked(reservation: Reservation, reservations_dao: ReservationDao) -> 
 def get_all_existing_reservations(session: Session) -> list[DockReservationHistory]:
     reservation_dao = ReservationDao(session)
     return reservation_dao.get_all_reservations()
+
+
+def get_all_docks(session: Session) -> list[DockInfo]:
+    return DocksDao(session).get_all_docks()

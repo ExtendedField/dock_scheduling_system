@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateReservationCreateReservationPostData, CreateReservationCreateReservationPostErrors, CreateReservationCreateReservationPostResponses, GetCurrentReservationsCurrentReservationsGetData, GetCurrentReservationsCurrentReservationsGetResponses } from './types.gen.js';
+import type { CreateReservationCreateReservationPostData, CreateReservationCreateReservationPostErrors, CreateReservationCreateReservationPostResponses, GetCurrentReservationsCurrentReservationsGetData, GetCurrentReservationsCurrentReservationsGetResponses, GetDocksDocksGetData, GetDocksDocksGetResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -34,3 +34,8 @@ export const createReservationCreateReservationPost = <ThrowOnError extends bool
  * Get Current Reservations
  */
 export const getCurrentReservationsCurrentReservationsGet = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentReservationsCurrentReservationsGetData, ThrowOnError>): RequestResult<GetCurrentReservationsCurrentReservationsGetResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetCurrentReservationsCurrentReservationsGetResponses, unknown, ThrowOnError>({ url: '/current_reservations', ...options });
+
+/**
+ * Get Docks
+ */
+export const getDocksDocksGet = <ThrowOnError extends boolean = false>(options?: Options<GetDocksDocksGetData, ThrowOnError>): RequestResult<GetDocksDocksGetResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetDocksDocksGetResponses, unknown, ThrowOnError>({ url: '/docks', ...options });
